@@ -1,65 +1,59 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from './product.model';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class ProductService {
-    protected items: Product[] = [];
+    public constructor(@InjectModel('Product') protected readonly model: Model<Product>) {}
 
-    list(): Product[] {
-        return [ ...this.items ];
+    public async list(): Promise<Product[]> {
+        return await this.model.find();
     }
 
-    find(id: number): Product {
-        const product: Product = this.items.find((item: Product): boolean => item.id === id);
+    public async find(id: string): Promise<Product> {
+        let product: Product;
+
+        try {
+            product = await this.model.findById(id);
+        } catch (error) {
+            //
+        }
 
         if (! product) {
             throw new NotFoundException();
         }
-
-        return { ...product };
-    }
-
-    store(name: string, price: number): Product {
-        const id: number = parseInt((Math.random() * 100).toString());
-        const product: Product = new Product(id, name, price);
-
-        this.items.push(product);
-
-        return { ...product };
-    }
-
-    update(id: number, name: string, price: number): Product {
-        const index = this.getIndex(id);
-        const product: Product = this.items[index];
-
-        if (! product) {
-            throw new NotFoundException();
-        }
-
-        product.name = name || product.name;
-        product.price = price || product.price;
-
-        return { ...product };
-    }
-
-    delete(id: number): Product {
-        const index = this.getIndex(id);
-        const product: Product = this.items[index];
-
-        if (! product) {
-            throw new NotFoundException();
-        }
-
-        this.items = this.items.filter((item: Product): boolean => item.id !== id);
 
         return product;
     }
 
-    getIndex(id: number): number {
-        for (let i = 0; i < this.items.length; i += 1) {
-            if (this.items[i].id === id) return i;
-        }
+    public async store(name: string, price: number): Promise<Product> {
+        const product: Product = new this.model({
+            name,
+            price,
+        });
 
-        return null;
+        await product.save();
+
+        return product;
+    }
+
+    public async update(id: string, name: string, price: number): Promise<Product> {
+        const product: Product = await this.find(id);
+
+        product.name = name || product.name;
+        product.price = price || product.price;
+
+        await product.save();
+
+        return product;
+    }
+
+    public async delete(id: string): Promise<Product> {
+        const product: Product = await this.find(id);
+
+        await this.model.deleteOne({ _id: product._id });
+
+        return product;
     }
 }

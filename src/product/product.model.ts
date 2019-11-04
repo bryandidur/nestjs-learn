@@ -1,8 +1,18 @@
+import * as mongoose from 'mongoose';
 
-export class Product {
-    constructor(public id: number, public name: string, public price: number) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-    }
+export const ProductSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+    },
+    price: {
+        type: Number,
+        required: true,
+    },
+});
+
+export interface Product extends mongoose.Document {
+    _id: string;
+    name: string;
+    price: number;
 }

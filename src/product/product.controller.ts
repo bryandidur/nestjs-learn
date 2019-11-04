@@ -7,36 +7,36 @@ export class ProductController {
     constructor(protected readonly service: ProductService) {}
 
     @Get()
-    list(): Product[] {
-        return this.service.list();
+    public async list(): Promise<Product[]> {
+        return await this.service.list();
     }
 
     @Get('/:id')
-    find(
-        @Param() params: { id: number }
-    ): Product {
-        return this.service.find(Number(params.id));
+    public async find(
+        @Param() params: { id: string }
+    ): Promise<Product> {
+        return await this.service.find(params.id);
     }
 
     @Post()
-    store(
+    public async store(
         @Body() requestData: { name: string, price: number }
-    ): Product {
-        return this.service.store(requestData.name, requestData.price);
+    ): Promise<Product> {
+        return await this.service.store(requestData.name, requestData.price);
     }
 
     @Patch('/:id')
-    update(
-        @Param() params: { id: number },
+    public async update(
+        @Param() params: { id: string },
         @Body() requestData: { name: string, price: number }
-    ): Product {
-        return this.service.update(Number(params.id), requestData.name, requestData.price);
+    ): Promise<Product> {
+        return await this.service.update(params.id, requestData.name, requestData.price);
     }
 
     @Delete('/:id')
-    delete(
-        @Param() params: { id: number }
-    ): Product {
-        return this.service.delete(Number(params.id));
+    public async delete(
+        @Param() params: { id: string }
+    ): Promise<Product> {
+        return await this.service.delete(params.id);
     }
 }
